@@ -30,8 +30,10 @@
         }
         .setup-row { margin-bottom: 20px; text-align: left; }
         .setup-row label.title { font-weight: bold; display: block; margin-bottom: 8px; }
-        .setup-row input[type="text"], .setup-row input[type="password"], .setup-row select { 
-            width: 90%; padding: 10px; font-size: 16px; border-radius: 6px; border: 1px solid #ccc;
+        
+        /* 🌟 擴充樣式：加入 input[type="number"] 讓自訂輸入框一樣美觀 */
+        .setup-row input[type="text"], .setup-row input[type="password"], .setup-row input[type="number"], .setup-row select { 
+            width: 90%; padding: 10px; font-size: 16px; border-radius: 6px; border: 1px solid #ccc; box-sizing: border-box;
         }
         
         .mode-options { display: flex; gap: 20px; font-size: 18px; padding-bottom: 10px; border-bottom: 2px dashed #eee; margin-bottom: 15px;}
@@ -202,21 +204,13 @@
         </div>
 
         <div class="setup-row" id="row-rounds">
-            <label class="title">總題數：</label>
-            <select id="sel-rounds">
-                <option value="5">5 題</option>
-                <option value="10">10 題</option>
-                <option value="20">20 題</option>
-            </select>
+            <label class="title">輸入總題數：</label>
+            <input type="number" id="sel-rounds" value="10" min="1" max="99" placeholder="例如：10">
         </div>
 
         <div class="setup-row" id="row-time" style="display: none;">
-            <label class="title">遊戲時間：</label>
-            <select id="sel-time">
-                <option value="60">1 分鐘</option>
-                <option value="180">3 分鐘</option>
-                <option value="300">5 分鐘</option>
-            </select>
+            <label class="title">輸入遊戲時間 (單位：分鐘)：</label>
+            <input type="number" id="sel-time" value="3" min="1" max="60" placeholder="例如：3">
         </div>
 
         <button onclick="initGame()" style="width: 100%;">開始遊戲</button>
@@ -337,7 +331,7 @@
                 const data = await res.json();
 
                 if(!data || data.length === 0) {
-                    listContainer.innerHTML = '🫙 目前尚無任何算題紀錄。快去玩一局吧！';
+                    listContainer.innerHTML = '🫙 目前尚無 any 算題紀錄。快去玩一局吧！';
                     return;
                 }
 
@@ -403,12 +397,17 @@
                 document.getElementById('skip-btn').innerText = '⏭️ 雙方放棄跳過 (平手)';
             }
             
+            // 🌟 修正：獲取輸入框內的使用者自訂題數與時間，並加上基本的防呆（不允許小於 1 的防呆）
             if (gameMode === 'rounds') {
-                totalRounds = parseInt(document.getElementById('sel-rounds').value);
+                totalRounds = parseInt(document.getElementById('sel-rounds').value) || 10;
+                if (totalRounds < 1) totalRounds = 1;
                 document.getElementById('mode-display-container').innerHTML = `📝 題數: <span id="round-display">1</span> / ${totalRounds}`;
                 document.getElementById('time-display-container').innerHTML = `⏳ 時間: 無限制`;
             } else {
-                timeRemaining = parseInt(document.getElementById('sel-time').value);
+                let minutesInput = parseInt(document.getElementById('sel-time').value) || 3;
+                if (minutesInput < 1) minutesInput = 1;
+                timeRemaining = minutesInput * 60; // 🌟 自動將玩家輸入的分鐘數轉換為秒數
+                
                 document.getElementById('mode-display-container').innerHTML = `📝 已答題數: <span id="round-display">1</span>`;
                 document.getElementById('time-display-container').innerHTML = `⏳ 剩餘時間: <span id="time-display">00:00</span>`;
                 
@@ -705,9 +704,8 @@
             document.getElementById('final-result').innerHTML = resText;
         }
 
-        // 🌟 新增功能：安全返回大廳面板（不刷新網頁，保留登入帳號）
         function returnToLobby() {
-            clearInterval(timerInterval); // 安全清除可能殘留的計時器
+            clearInterval(timerInterval); 
             document.getElementById('game-screen').style.display = 'none';
             document.getElementById('end-screen').style.display = 'none';
             document.getElementById('setup-screen').style.display = 'block';
