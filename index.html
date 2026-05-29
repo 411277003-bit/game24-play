@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>24點 搶答對戰版</title>
+    <title>24點 全端會員對戰版</title>
     <style>
         body {
             font-family: "Microsoft JhengHei", Arial, sans-serif;
@@ -16,26 +16,28 @@
         }
         h1 { color: #2c3e50; margin-bottom: 10px; }
         
-        /* 設定大廳 */
-        #setup-screen {
+        /* 畫面區塊控制 */
+        #auth-screen, #setup-screen, #game-screen, #end-screen { display: none; }
+        
+        /* 表單與面板基礎樣式 */
+        .panel {
             background: #fff;
             max-width: 400px;
-            margin: 50px auto;
+            margin: 40px auto;
             padding: 30px;
             border-radius: 12px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.1);
         }
         .setup-row { margin-bottom: 20px; text-align: left; }
         .setup-row label.title { font-weight: bold; display: block; margin-bottom: 8px; }
-        .setup-row select { width: 100%; padding: 10px; font-size: 16px; border-radius: 6px; }
+        .setup-row input[type="text"], .setup-row input[type="password"], .setup-row select { 
+            width: 90%; padding: 10px; font-size: 16px; border-radius: 6px; border: 1px solid #ccc;
+        }
         
-        /* 模式選擇單選框的樣式 */
         .mode-options { display: flex; gap: 20px; font-size: 18px; padding-bottom: 10px; border-bottom: 2px dashed #eee; margin-bottom: 15px;}
         .mode-options label { cursor: pointer; }
 
         /* 遊戲主畫面 */
-        #game-screen, #end-screen { display: none; }
-        
         #header-info {
             display: flex;
             justify-content: space-between;
@@ -65,7 +67,6 @@
         .p1-score { color: #2980b9; }
         .p2-score { color: #8e44ad; }
 
-        /* 搶答提示區 */
         #buzzer-status {
             font-size: 22px;
             font-weight: bold;
@@ -79,7 +80,7 @@
         .buzzed-p1 { background-color: #d6eaf8 !important; color: #2980b9 !important; }
         .buzzed-p2 { background-color: #f4ecf8 !important; color: #8e44ad !important; }
 
-        /* 撲克牌與符號區 */
+        /* 工作區 */
         .workspace {
             display: flex;
             flex-direction: column;
@@ -120,91 +121,106 @@
         .red { color: #e74c3c; }
         .black { color: #2c3e50; }
 
-        /* 算式放置區 */
         #equation-zone {
-            width: 80%;
-            max-width: 600px;
-            min-height: 80px;
-            background: #fff;
-            border: 3px dashed #bdc3c7;
-            border-radius: 12px;
-            margin: 20px auto;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-wrap: wrap;
-            gap: 10px;
-            padding: 15px;
-            font-size: 32px;
-            font-family: monospace;
+            width: 80%; max-width: 600px; min-height: 80px; background: #fff;
+            border: 3px dashed #bdc3c7; border-radius: 12px; margin: 20px auto;
+            display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 10px; padding: 15px;
+            font-size: 32px; font-family: monospace;
         }
         #equation-zone.dragover { background-color: #ecf0f1; border-color: #3498db; }
         
         .eq-item {
-            background: #ecf0f1;
-            padding: 5px 15px;
-            border-radius: 8px;
-            cursor: pointer;
-            box-shadow: 1px 1px 3px rgba(0,0,0,0.2);
-            font-weight: bold;
+            background: #ecf0f1; padding: 5px 15px; border-radius: 8px;
+            cursor: pointer; box-shadow: 1px 1px 3px rgba(0,0,0,0.2); font-weight: bold;
         }
         .eq-item:hover { background: #e74c3c; color: white; }
 
         .controls { margin: 20px 0; display: flex; justify-content: center; gap: 15px; }
         button {
-            padding: 12px 25px;
-            font-size: 18px;
-            font-weight: bold;
-            cursor: pointer;
-            border: none;
-            border-radius: 8px;
-            background-color: #27ae60;
-            color: white;
-            transition: background 0.3s;
+            padding: 12px 25px; font-size: 18px; font-weight: bold; cursor: pointer;
+            border: none; border-radius: 8px; background-color: #27ae60; color: white; transition: background 0.3s;
         }
         button:hover { background-color: #2ecc71; }
-        
         .btn-home { background-color: #7f8c8d; }
         .btn-home:hover { background-color: #95a5a6; }
+        .btn-history { background-color: #2980b9; margin-top: 10px; width: 100%;}
+        .btn-history:hover { background-color: #3498db; }
 
         #msg-box { font-size: 18px; font-weight: bold; min-height: 25px; margin: 10px; }
         .success { color: #27ae60; }
         .error { color: #e74c3c; }
 
+        /* 歷史紀錄彈出面板 */
+        #history-modal {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5); justify-content: center; align-items: center; z-index: 100;
+        }
+        .modal-content {
+            background: white; padding: 25px; border-radius: 12px; width: 80%; max-width: 500px;
+            max-height: 70vh; overflow-y: auto; text-align: left;
+        }
+        .history-item { border-bottom: 1px solid #eee; padding: 10px 0; font-size: 15px; }
     </style>
 </head>
 <body>
 
-    <div id="setup-screen">
-        <h1>🃏 24點 搶答模式</h1>
+    <div id="auth-screen" class="panel" style="display: block;">
+        <h2>🔐 24點 會員登入</h2>
+        <div id="auth-msg" class="error" style="margin-bottom: 10px;"></div>
+        <div class="setup-row">
+            <label class="title">用戶帳號：</label>
+            <input type="text" id="auth-username" placeholder="請輸入帳號">
+        </div>
+        <div class="setup-row">
+            <label class="title">用戶密碼：</label>
+            <input type="password" id="auth-password" placeholder="請輸入密碼">
+        </div>
+        <div style="display: flex; gap: 15px; justify-content: center;">
+            <button onclick="handleAuth('login')">立即登入</button>
+            <button onclick="handleAuth('register')" style="background-color: #e67e22;">註冊帳號</button>
+        </div>
+    </div>
+
+    <div id="setup-screen" class="panel">
+        <h2>🃏 24點 遊戲大廳</h2>
+        <p style="text-align: right; color: #7f8c8d; font-weight: bold;">歡迎，<span id="user-display" style="color: #27ae60;"></span>！</p>
         
         <div class="setup-row">
-            <label class="title">選擇比賽模式：</label>
+            <label class="title">選擇遊玩模式：</label>
             <div class="mode-options">
-                <label><input type="radio" name="gameMode" value="rounds" checked onchange="toggleMode()"> 指定題數</label>
-                <label><input type="radio" name="gameMode" value="time" onchange="toggleMode()"> 指定時間</label>
+                <label><input type="radio" name="playMode" value="single" checked onchange="togglePlayMode()"> 🧘 單人獨享</label>
+                <label><input type="radio" name="playMode" value="battle" onchange="togglePlayMode()"> ⚔️ 雙人對戰</label>
+            </div>
+        </div>
+
+        <div class="setup-row">
+            <label class="title">選擇比賽依據：</label>
+            <div class="mode-options">
+                <label><input type="radio" name="gameMode" value="rounds" checked onchange="toggleGameMode()"> 指定題數</label>
+                <label><input type="radio" name="gameMode" value="time" onchange="toggleGameMode()"> 指定時間</label>
             </div>
         </div>
 
         <div class="setup-row" id="row-rounds">
-            <label class="title">總題數 (先完成者勝)：</label>
+            <label class="title">總題數：</label>
             <select id="sel-rounds">
+                <option value="5">5 題</option>
                 <option value="10">10 題</option>
                 <option value="20">20 題</option>
-                <option value="25">25 題</option>
             </select>
         </div>
 
         <div class="setup-row" id="row-time" style="display: none;">
-            <label class="title">遊戲時間 (時間內高分者勝)：</label>
+            <label class="title">遊戲時間：</label>
             <select id="sel-time">
+                <option value="60">1 分鐘</option>
                 <option value="180">3 分鐘</option>
                 <option value="300">5 分鐘</option>
-                <option value="600">10 分鐘</option>
             </select>
         </div>
 
-        <button onclick="initGame()">開始對戰</button>
+        <button onclick="initGame()" style="width: 100%;">開始遊戲</button>
+        <button onclick="fetchPersonalHistory()" class="btn-history">📜 查看歷史出題紀錄</button>
     </div>
 
     <div id="game-screen">
@@ -214,17 +230,16 @@
         </div>
 
         <div id="score-board">
-            <span class="p1-score">玩家一 (Z鍵): <span id="score1">0</span></span>
-            &nbsp; | &nbsp; 
-            <span class="p2-score">玩家二 (M鍵): <span id="score2">0</span></span>
+            <span class="p1-score" id="p1-title">玩家一: <span id="score1">0</span></span>
+            <span id="p2-score-divider"> &nbsp; | &nbsp; </span>
+            <span class="p2-score" id="p2-title">玩家二 (M鍵): <span id="score2">0</span></span>
         </div>
 
-        <div id="buzzer-status">準備就緒... 發牌中！</div>
+        <div id="buzzer-status">發牌中...</div>
         <div id="msg-box"></div>
 
         <div class="workspace" id="workspace">
             <div id="cards-container"></div>
-            
             <div id="operators-container">
                 <div class="draggable-item operator" draggable="true" data-type="op" data-val="+">+</div>
                 <div class="draggable-item operator" draggable="true" data-type="op" data-val="-">-</div>
@@ -233,30 +248,43 @@
                 <div class="draggable-item operator" draggable="true" data-type="op" data-val="(">(</div>
                 <div class="draggable-item operator" draggable="true" data-type="op" data-val=")">)</div>
             </div>
-
             <p style="margin-bottom: 5px; color: #7f8c8d;">▼ 將卡片與符號拖曳至此 (或直接點擊) / 點擊下方區塊可退回 ▼</p>
             <div id="equation-zone"></div>
         </div>
 
         <div class="controls">
-            <button id="skip-btn" onclick="skipRound()" style="display: none;">⏭️ 雙方放棄跳過 (紀錄為平手)</button>
+            <button id="skip-btn" onclick="skipRound()">⏭️ 放棄跳過</button>
             <button class="btn-home" onclick="location.reload()">🏠 返回主選單</button>
         </div>
     </div>
 
-    <div id="end-screen">
+    <div id="end-screen" class="panel">
         <h1>🏆 遊戲結束</h1>
         <h2 id="final-result"></h2>
         <br>
         <button class="btn-home" onclick="location.reload()">🏠 返回主選單</button>
     </div>
 
+    <div id="history-modal">
+        <div class="modal-content">
+            <h2 style="margin-top:0;">📜 我的算題歷史明細</h2>
+            <div id="history-list">讀取中...</div>
+            <br>
+            <button onclick="document.getElementById('history-modal').style.display='none'" style="background-color:#7f8c8d; width:100%;">關閉視窗</button>
+        </div>
+    </div>
+
     <script>
+        // 請將此網址替換為你真實的 Render 雲端後端網址
+        const BACKEND_URL = 'https://two4point-lc7l.onrender.com';
+
         const suits = ['♠', '♥', '♦', '♣'];
         let deck = [];
         let scores = { 1: 0, 2: 0 };
         
-        let gameMode = 'rounds'; 
+        let currentUser = '';
+        let playMode = 'single'; // single 或 battle
+        let gameMode = 'rounds'; // rounds 或 time
         let totalRounds = 10;
         let currentRound = 1;
         let timeRemaining = 300;
@@ -265,15 +293,78 @@
         let activePlayer = null; 
         let cardsUsedCount = 0;
 
-        function toggleMode() {
-            gameMode = document.querySelector('input[name="gameMode"]:checked').value;
-            if (gameMode === 'rounds') {
-                document.getElementById('row-rounds').style.display = 'block';
-                document.getElementById('row-time').style.display = 'none';
-            } else {
-                document.getElementById('row-rounds').style.display = 'none';
-                document.getElementById('row-time').style.display = 'block';
+        // 處理註冊與登入
+        async function handleAuth(type) {
+            const userInp = document.getElementById('auth-username').value.trim();
+            const passInp = document.getElementById('auth-password').value.trim();
+            const msgBox = document.getElementById('auth-msg');
+
+            if(!userInp || !passInp) {
+                msgBox.innerText = '⚠️ 請完整填寫帳號與密碼！';
+                return;
             }
+
+            try {
+                const res = await fetch(`${BACKEND_URL}/api/${type}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username: userInp, password: passInp })
+                });
+                const data = await res.json();
+
+                if(!res.ok) {
+                    msgBox.innerText = data.message;
+                } else {
+                    alert(data.message);
+                    if(type === 'login') {
+                        currentUser = data.username;
+                        document.getElementById('user-display').innerText = currentUser;
+                        document.getElementById('auth-screen').style.display = 'none';
+                        document.getElementById('setup-screen').style.display = 'block';
+                    }
+                }
+            } catch (e) {
+                msgBox.innerText = '🔴 無法連線至雲端後台伺服器！';
+            }
+        }
+
+        // 獲取並彈出個人算題歷史紀錄
+        async function fetchPersonalHistory() {
+            const modal = document.getElementById('history-modal');
+            const listContainer = document.getElementById('history-list');
+            modal.style.display = 'flex';
+            listContainer.innerHTML = '正在從雲端同步明細...';
+
+            try {
+                const res = await fetch(`${BACKEND_URL}/api/history?username=${currentUser}`);
+                const data = await res.json();
+
+                if(!data || data.length === 0) {
+                    listContainer.innerHTML = '🫙 目前尚無任何算題紀錄。快去玩一局吧！';
+                    return;
+                }
+
+                listContainer.innerHTML = data.map((item, idx) => `
+                    <div class="history-item">
+                        <strong>第 ${data.length - idx} 筆紀錄</strong> (${new Date(item.playedAt).toLocaleString()})<br>
+                        🎴 出題數字: [ ${item.cards.join(', ')} ]<br>
+                        🎮 模式: ${item.gameMode === 'single' ? '單人獨享' : '雙人對戰'}<br>
+                        🏁 結果狀態: <span style="color:${item.winner.includes('失敗') || item.winner.includes('放棄') ? '#e74c3c':'#27ae60'}">${item.winner}</span>
+                    </div>
+                `).join('');
+            } catch (e) {
+                listContainer.innerHTML = '❌ 歷史紀錄讀取失敗，請確認後端是否正在運作。';
+            }
+        }
+
+        function togglePlayMode() {
+            playMode = document.querySelector('input[name="playMode"]:checked').value;
+        }
+
+        function toggleGameMode() {
+            gameMode = document.querySelector('input[name="gameMode"]:checked').value;
+            document.getElementById('row-rounds').style.display = (gameMode === 'rounds') ? 'block' : 'none';
+            document.getElementById('row-time').style.display = (gameMode === 'time') ? 'block' : 'none';
         }
 
         function hasSolution(nums) {
@@ -298,7 +389,23 @@
         }
 
         function initGame() {
-            gameMode = document.querySelector('input[name="gameMode"]:checked').value;
+            scores = { 1: 0, 2: 0 };
+            currentRound = 1;
+            document.getElementById('score1').innerText = '0';
+            document.getElementById('score2').innerText = '0';
+
+            // UI 雙人/單人標題適配
+            if (playMode === 'single') {
+                document.getElementById('p1-title').innerHTML = `玩家挑戰分數: <span id="score1">0</span>`;
+                document.getElementById('p2-score-divider').style.display = 'none';
+                document.getElementById('p2-title').style.display = 'none';
+                document.getElementById('skip-btn').innerText = '⏭️ 放棄本題 (扣分並跳過)';
+            } else {
+                document.getElementById('p1-title').innerHTML = `玩家一 (Z鍵): <span id="score1">0</span>`;
+                document.getElementById('p2-score-divider').style.display = 'inline';
+                document.getElementById('p2-title').style.display = 'inline';
+                document.getElementById('skip-btn').innerText = '⏭️ 雙方放棄跳過 (平手)';
+            }
             
             if (gameMode === 'rounds') {
                 totalRounds = parseInt(document.getElementById('sel-rounds').value);
@@ -313,7 +420,7 @@
                 timerInterval = setInterval(() => {
                     timeRemaining--;
                     updateTimerDisplay();
-                    if (timeRemaining <= 0) endGame("時間到！");
+                    if (timeRemaining <= 0) endGame("⏰ 時間到！");
                 }, 1000);
             }
 
@@ -355,7 +462,18 @@
             }
 
             renderCards(drawnObjects);
-            resetBuzzer();
+            
+            // 🌟 模式功能分支處理
+            if(playMode === 'single') {
+                activePlayer = 1; // 單人直接鎖定玩家1
+                document.getElementById('workspace').classList.add('active');
+                let status = document.getElementById('buzzer-status');
+                status.innerText = "🧩 單人挑戰中：請排出能組成 24 的算式後，按【空白鍵】送出驗證！";
+                status.className = '';
+                document.getElementById('msg-box').innerText = '';
+            } else {
+                resetBuzzer();
+            }
         }
 
         function renderCards(cards) {
@@ -386,22 +504,21 @@
             activePlayer = null;
             document.getElementById('workspace').classList.remove('active');
             let status = document.getElementById('buzzer-status');
-            status.innerText = "⚡ 請準備搶答！ (玩家一按 Z，玩家二按 M)";
+            status.innerText = "⚡ 雙人對戰：請準備搶答！ (玩家一按 Z，玩家二按 M)";
             status.className = '';
-            document.getElementById('skip-btn').style.display = 'inline-block';
             document.getElementById('msg-box').innerText = '';
         }
 
         document.addEventListener('keydown', (e) => {
             if (document.getElementById('game-screen').style.display !== 'block') return;
 
-            if (activePlayer === null) {
+            if (playMode === 'battle' && activePlayer === null) {
                 if (e.key.toLowerCase() === 'z') {
                     activePlayer = 1;
-                    lockBuzzer(1, "玩家一 (藍方) 搶到了！請排列算式並按【空白鍵】送出");
+                    lockBuzzer(1, "🔵 玩家一 (藍方) 搶到了！請排列算式並按【空白鍵】送出");
                 } else if (e.key.toLowerCase() === 'm') {
                     activePlayer = 2;
-                    lockBuzzer(2, "玩家二 (紫方) 搶到了！請排列算式並按【空白鍵】送出");
+                    lockBuzzer(2, "🟣 玩家二 (紫方) 搶到了！請排列算式並按【空白鍵】送出");
                 }
             } 
             else if (e.code === 'Space') {
@@ -415,7 +532,6 @@
             let status = document.getElementById('buzzer-status');
             status.innerText = msg;
             status.className = player === 1 ? 'buzzed-p1' : 'buzzed-p2';
-            document.getElementById('skip-btn').style.display = 'none';
         }
 
         function setupDragAndDrop() {
@@ -487,7 +603,7 @@
         function processNextRound() {
             currentRound++;
             if (gameMode === 'rounds' && currentRound > totalRounds) {
-                endGame("所有題數已完成！");
+                endGame("🏆 指定題數已全部挑戰完畢！");
             } else {
                 drawCards();
             }
@@ -512,7 +628,7 @@
             try {
                 let result = eval(mathStr);
                 if (result === 24) {
-                    msgBox.innerHTML = "<span class='success'>🎉 恭喜答對！進入下一題...</span>";
+                    msgBox.innerHTML = "<span class='success'>🎉 恭喜答對！成功組成 24 點！</span>";
                     scores[activePlayer]++;
                     document.getElementById(`score${activePlayer}`).innerText = scores[activePlayer];
                     
@@ -527,28 +643,32 @@
                     }, 1500);
 
                 } else {
-                    msgBox.innerHTML = `<span class='error'>❌ 算出來是 ${result}，答錯了！重置並重新開放搶答。</span>`;
+                    msgBox.innerHTML = `<span class='error'>❌ 算出來是 ${result} 答錯了！${playMode === 'single' ? '請重新修正算式！':'重置並重新開放搶答。'}</span>`;
+                    if (playMode === 'battle') {
+                        setTimeout(() => {
+                            clearEquationZone();
+                            resetBuzzer();
+                        }, 2000);
+                    }
+                }
+            } catch (e) {
+                msgBox.innerHTML = "<span class='error'>❌ 算式結構錯誤 (例如括號不完整)，請檢查！</span>";
+                if (playMode === 'battle') {
                     setTimeout(() => {
                         clearEquationZone();
                         resetBuzzer();
                     }, 2000);
                 }
-            } catch (e) {
-                msgBox.innerHTML = "<span class='error'>❌ 算式格式錯誤 (例如括號不完整)！</span>";
-                setTimeout(() => {
-                    clearEquationZone();
-                    resetBuzzer();
-                }, 2000);
             }
         }
 
         function skipRound() {
             let msgBox = document.getElementById('msg-box');
-            msgBox.innerHTML = "<span class='error'>⏭️ 雙方放棄！紀錄為平手，準備進入下一題...</span>";
+            msgBox.innerHTML = "<span class='error'>⏭️ 放棄本題，準備發放下一題牌組...</span>";
             
-            document.getElementById('skip-btn').style.display = 'none';
-
             let currentCards = Array.from(document.querySelectorAll('.card')).map(c => parseInt(c.dataset.val));
+            
+            // 呼叫 API：如果單人放棄，傳入 0, 0 判斷為跳過
             saveGameStatsToServer(0, 0, currentCards);
 
             setTimeout(() => {
@@ -558,19 +678,19 @@
 
         async function saveGameStatsToServer(p1, p2, cards) {
             try {
-                // 🌟 關鍵修正：補上後方的 /api/stats 路由門牌
-                const response = await fetch('https://two4point-lc7l.onrender.com/api/stats', {
+                await fetch(`${BACKEND_URL}/api/stats`, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ p1: p1, p2: p2, cards: cards }) 
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        username: currentUser, 
+                        gameMode: playMode, 
+                        p1: p1, 
+                        p2: p2, 
+                        cards: cards 
+                    }) 
                 });
-
-                const result = await response.json();
-                console.log("伺服器回應：", result.message);
             } catch (error) {
-                console.error("資料上傳失敗：", error);
+                console.error("資料傳輸錯誤，未與雲端同步:", error);
             }
         }
 
@@ -579,10 +699,15 @@
             document.getElementById('game-screen').style.display = 'none';
             document.getElementById('end-screen').style.display = 'block';
 
-            let resText = `${reason}<br><br>玩家一得分: ${scores[1]}<br>玩家二得分: ${scores[2]}<br><br>`;
-            if (scores[1] > scores[2]) resText += "🏆 玩家一 獲勝！";
-            else if (scores[2] > scores[1]) resText += "🏆 玩家二 獲勝！";
-            else resText += "🤝 雙方平手！";
+            let resText = `${reason}<br><br>`;
+            if (playMode === 'single') {
+                resText += `👤 本局你一共成功解出：${scores[1]} 題！`;
+            } else {
+                resText += `玩家一得分: ${scores[1]}<br>玩家二得分: ${scores[2]}<br><br>`;
+                if (scores[1] > scores[2]) resText += "🏆 玩家一 獲勝！";
+                else if (scores[2] > scores[1]) resText += "🏆 玩家二 獲勝！";
+                else resText += "🤝 雙方旗鼓相當，平手！";
+            }
 
             document.getElementById('final-result').innerHTML = resText;
         }
