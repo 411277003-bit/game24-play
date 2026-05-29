@@ -254,7 +254,7 @@
 
         <div class="controls">
             <button id="skip-btn" onclick="skipRound()">⏭️ 放棄跳過</button>
-            <button class="btn-home" onclick="location.reload()">🏠 返回主選單</button>
+            <button class="btn-home" onclick="returnToLobby()">🏠 返回主選單</button>
         </div>
     </div>
 
@@ -262,7 +262,7 @@
         <h1>🏆 遊戲結束</h1>
         <h2 id="final-result"></h2>
         <br>
-        <button class="btn-home" onclick="location.reload()">🏠 返回主選單</button>
+        <button class="btn-home" onclick="returnToLobby()">🏠 返回主選單</button>
     </div>
 
     <div id="history-modal">
@@ -275,7 +275,6 @@
     </div>
 
     <script>
-        // 請將此網址替換為你真實的 Render 雲端後端網址
         const BACKEND_URL = 'https://two4point-lc7l.onrender.com';
 
         const suits = ['♠', '♥', '♦', '♣'];
@@ -283,8 +282,8 @@
         let scores = { 1: 0, 2: 0 };
         
         let currentUser = '';
-        let playMode = 'single'; // single 或 battle
-        let gameMode = 'rounds'; // rounds 或 time
+        let playMode = 'single'; 
+        let gameMode = 'rounds'; 
         let totalRounds = 10;
         let currentRound = 1;
         let timeRemaining = 300;
@@ -293,7 +292,6 @@
         let activePlayer = null; 
         let cardsUsedCount = 0;
 
-        // 處理註冊與登入
         async function handleAuth(type) {
             const userInp = document.getElementById('auth-username').value.trim();
             const passInp = document.getElementById('auth-password').value.trim();
@@ -328,7 +326,6 @@
             }
         }
 
-        // 獲取並彈出個人算題歷史紀錄
         async function fetchPersonalHistory() {
             const modal = document.getElementById('history-modal');
             const listContainer = document.getElementById('history-list');
@@ -394,7 +391,6 @@
             document.getElementById('score1').innerText = '0';
             document.getElementById('score2').innerText = '0';
 
-            // UI 雙人/單人標題適配
             if (playMode === 'single') {
                 document.getElementById('p1-title').innerHTML = `玩家挑戰分數: <span id="score1">0</span>`;
                 document.getElementById('p2-score-divider').style.display = 'none';
@@ -463,9 +459,8 @@
 
             renderCards(drawnObjects);
             
-            // 🌟 模式功能分支處理
             if(playMode === 'single') {
-                activePlayer = 1; // 單人直接鎖定玩家1
+                activePlayer = 1; 
                 document.getElementById('workspace').classList.add('active');
                 let status = document.getElementById('buzzer-status');
                 status.innerText = "🧩 單人挑戰中：請排出能組成 24 的算式後，按【空白鍵】送出驗證！";
@@ -667,8 +662,6 @@
             msgBox.innerHTML = "<span class='error'>⏭️ 放棄本題，準備發放下一題牌組...</span>";
             
             let currentCards = Array.from(document.querySelectorAll('.card')).map(c => parseInt(c.dataset.val));
-            
-            // 呼叫 API：如果單人放棄，傳入 0, 0 判斷為跳過
             saveGameStatsToServer(0, 0, currentCards);
 
             setTimeout(() => {
@@ -710,6 +703,14 @@
             }
 
             document.getElementById('final-result').innerHTML = resText;
+        }
+
+        // 🌟 新增功能：安全返回大廳面板（不刷新網頁，保留登入帳號）
+        function returnToLobby() {
+            clearInterval(timerInterval); // 安全清除可能殘留的計時器
+            document.getElementById('game-screen').style.display = 'none';
+            document.getElementById('end-screen').style.display = 'none';
+            document.getElementById('setup-screen').style.display = 'block';
         }
     </script>
 </body>
