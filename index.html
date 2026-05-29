@@ -31,7 +31,6 @@
         .setup-row { margin-bottom: 20px; text-align: left; }
         .setup-row label.title { font-weight: bold; display: block; margin-bottom: 8px; }
         
-        /* 🌟 擴充樣式：加入 input[type="number"] 讓自訂輸入框一樣美觀 */
         .setup-row input[type="text"], .setup-row input[type="password"], .setup-row input[type="number"], .setup-row select { 
             width: 90%; padding: 10px; font-size: 16px; border-radius: 6px; border: 1px solid #ccc; box-sizing: border-box;
         }
@@ -147,6 +146,10 @@
         .btn-home:hover { background-color: #95a5a6; }
         .btn-history { background-color: #2980b9; margin-top: 10px; width: 100%;}
         .btn-history:hover { background-color: #3498db; }
+        
+        /* 🌟 新增：離開遊戲按鈕的樣式 */
+        .btn-logout { background-color: #e74c3c; margin-top: 10px; width: 100%; }
+        .btn-logout:hover { background-color: #c0392b; }
 
         #msg-box { font-size: 18px; font-weight: bold; min-height: 25px; margin: 10px; }
         .success { color: #27ae60; }
@@ -215,6 +218,8 @@
 
         <button onclick="initGame()" style="width: 100%;">開始遊戲</button>
         <button onclick="fetchPersonalHistory()" class="btn-history">📜 查看歷史出題紀錄</button>
+        
+        <button onclick="handleLogout()" class="btn-logout">🚪 離開遊戲 (回登入畫面)</button>
     </div>
 
     <div id="game-screen">
@@ -397,7 +402,6 @@
                 document.getElementById('skip-btn').innerText = '⏭️ 雙方放棄跳過 (平手)';
             }
             
-            // 🌟 修正：獲取輸入框內的使用者自訂題數與時間，並加上基本的防呆（不允許小於 1 的防呆）
             if (gameMode === 'rounds') {
                 totalRounds = parseInt(document.getElementById('sel-rounds').value) || 10;
                 if (totalRounds < 1) totalRounds = 1;
@@ -406,7 +410,7 @@
             } else {
                 let minutesInput = parseInt(document.getElementById('sel-time').value) || 3;
                 if (minutesInput < 1) minutesInput = 1;
-                timeRemaining = minutesInput * 60; // 🌟 自動將玩家輸入的分鐘數轉換為秒數
+                timeRemaining = minutesInput * 60; 
                 
                 document.getElementById('mode-display-container').innerHTML = `📝 已答題數: <span id="round-display">1</span>`;
                 document.getElementById('time-display-container').innerHTML = `⏳ 剩餘時間: <span id="time-display">00:00</span>`;
@@ -709,6 +713,18 @@
             document.getElementById('game-screen').style.display = 'none';
             document.getElementById('end-screen').style.display = 'none';
             document.getElementById('setup-screen').style.display = 'block';
+        }
+
+        // 🌟 新增功能：處理登出，清空狀態並跳回最原始的登入/註冊畫面
+        function handleLogout() {
+            currentUser = ''; // 登出清除會員狀態
+            document.getElementById('auth-username').value = ''; // 清空輸入框
+            document.getElementById('auth-password').value = '';
+            document.getElementById('auth-msg').innerText = ''; // 清除之前的錯誤訊息
+            
+            // 切換畫面
+            document.getElementById('setup-screen').style.display = 'none';
+            document.getElementById('auth-screen').style.display = 'block';
         }
     </script>
 </body>
