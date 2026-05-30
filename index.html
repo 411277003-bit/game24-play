@@ -14,7 +14,7 @@
             margin: 0;
             user-select: none;
         }
-        h1 { color: #2c3e50; margin-bottom: 10px; }
+        h2 { color: #2c3e50; margin-bottom: 10px; }
         
         /* 畫面區塊控制 */
         #auth-screen, #setup-screen, #game-screen, #end-screen { display: none; }
@@ -146,8 +146,6 @@
         .btn-home:hover { background-color: #95a5a6; }
         .btn-history { background-color: #2980b9; margin-top: 10px; width: 100%;}
         .btn-history:hover { background-color: #3498db; }
-        
-        /* 🌟 新增：離開遊戲按鈕的樣式 */
         .btn-logout { background-color: #e74c3c; margin-top: 10px; width: 100%; }
         .btn-logout:hover { background-color: #c0392b; }
 
@@ -218,7 +216,6 @@
 
         <button onclick="initGame()" style="width: 100%;">開始遊戲</button>
         <button onclick="fetchPersonalHistory()" class="btn-history">📜 查看歷史出題紀錄</button>
-        
         <button onclick="handleLogout()" class="btn-logout">🚪 離開遊戲 (回登入畫面)</button>
     </div>
 
@@ -274,6 +271,7 @@
     </div>
 
     <script>
+        // 確保網址為 lc7l 
         const BACKEND_URL = 'https://two4point-lc7l.onrender.com';
 
         const suits = ['♠', '♥', '♦', '♣'];
@@ -325,6 +323,7 @@
             }
         }
 
+        // 🌟 核心防護加強版：欄位做最極致的防呆（如 winner?.includes ），並在出錯時直接輸出真因
         async function fetchPersonalHistory() {
             const modal = document.getElementById('history-modal');
             const listContainer = document.getElementById('history-list');
@@ -332,24 +331,48 @@
             listContainer.innerHTML = '正在從雲端同步明細...';
 
             try {
-                const res = await fetch(`${BACKEND_URL}/api/history?username=${currentUser}`);
-                const data = await res.json();
-
-                if(!data || data.length === 0) {
-                    listContainer.innerHTML = '🫙 目前尚無 any 算題紀錄。快去玩一局吧！';
+                const res = await fetch(`${BACKEND_URL}/api/history?username=${encodeURIComponent(currentUser)}`);
+                
+                if (!res.ok) {
+                    const errData = await res.json().catch(() => ({}));
+                    listContainer.innerHTML = `❌ 雲端伺服器回應錯誤 (代碼 ${res.status})：${errData.message || '無法取得數據'}`;
                     return;
                 }
 
-                listContainer.innerHTML = data.map((item, idx) => `
-                    <div class="history-item">
-                        <strong>第 ${data.length - idx} 筆紀錄</strong> (${new Date(item.playedAt).toLocaleString()})<br>
-                        🎴 出題數字: [ ${item.cards.join(', ')} ]<br>
-                        🎮 模式: ${item.gameMode === 'single' ? '單人獨享' : '雙人對戰'}<br>
-                        🏁 結果狀態: <span style="color:${item.winner.includes('失敗') || item.winner.includes('放棄') ? '#e74c3c':'#27ae60'}">${item.winner}</span>
-                    </div>
-                `).join('');
+                const data = await res.json();
+
+                if (!Array.isArray(data)) {
+                    listContainer.innerHTML = '❌ 資料格式異常：雲端回傳的資料不是陣列。';
+                    return;
+                }
+
+                if (data.length === 0) {
+                    listContainer.innerHTML = '🫙 目前尚無任何算題紀錄。快去玩一局吧！';
+                    return;
+                }
+
+                listContainer.innerHTML = data.map((item, idx) => {
+                    // 超強安全閥：確保陣列與字串存在，欄位缺失也絕不當機
+                    const cardsDisplay = Array.isArray(item.cards) ? item.cards.join(', ') : '未知卡牌';
+                    const modeDisplay = item.gameMode === 'single' ? '單人獨享' : '雙人對戰';
+                    const winnerDisplay = item.winner || '平手/未紀錄';
+                    
+                    const isFailed = winnerDisplay.includes('失敗') || winnerDisplay.includes('放棄');
+                    const textColor = isFailed ? '#e74c3c' : '#27ae60';
+
+                    return `
+                        <div class="history-item">
+                            <strong>第 ${data.length - idx} 筆紀錄</strong> (${item.playedAt ? new Date(item.playedAt).toLocaleString() : '未知時間'})<br>
+                            🎴 出題數字: [ ${cardsDisplay} ]<br>
+                            🎮 模式: ${modeDisplay}<br>
+                            🏁 結果狀態: <span style="color:${textColor}">${winnerDisplay}</span>
+                        </div>
+                    `;
+                }).join('');
             } catch (e) {
-                listContainer.innerHTML = '❌ 歷史紀錄讀取失敗，請確認後端是否正在運作。';
+                // 核心改動：直接印出 JavaScript 報錯的真因，不再用罐頭訊息擋住
+                listContainer.innerHTML = `❌ 網頁執行或連線發生錯誤！<br>原因：${e.message}`;
+                console.error("詳細錯誤明細：", e);
             }
         }
 
@@ -669,12 +692,12 @@
 
             setTimeout(() => {
                 processNextRound(); 
-            }, 1500);
+                    }, 1500);
         }
 
         async function saveGameStatsToServer(p1, p2, cards) {
             try {
-                await fetch(`${BACKEND_URL}/api/stats`, {
+                const response = await fetch(`${BACKEND_URL}/api/stats`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ 
@@ -685,6 +708,8 @@
                         cards: cards 
                     }) 
                 });
+                const data = await response.json();
+                console.log("同步狀態:", data.message);
             } catch (error) {
                 console.error("資料傳輸錯誤，未與雲端同步:", error);
             }
@@ -715,14 +740,12 @@
             document.getElementById('setup-screen').style.display = 'block';
         }
 
-        // 🌟 新增功能：處理登出，清空狀態並跳回最原始的登入/註冊畫面
         function handleLogout() {
-            currentUser = ''; // 登出清除會員狀態
-            document.getElementById('auth-username').value = ''; // 清空輸入框
+            currentUser = ''; 
+            document.getElementById('auth-username').value = ''; 
             document.getElementById('auth-password').value = '';
-            document.getElementById('auth-msg').innerText = ''; // 清除之前的錯誤訊息
+            document.getElementById('auth-msg').innerText = ''; 
             
-            // 切換畫面
             document.getElementById('setup-screen').style.display = 'none';
             document.getElementById('auth-screen').style.display = 'block';
         }
