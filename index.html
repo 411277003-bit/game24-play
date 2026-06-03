@@ -25,7 +25,6 @@
         
         #auth-screen, #setup-screen, #game-screen, #end-screen { display: none; }
         
-        /* 🌟 核心統一：面板與遊戲元件寬度對齊 */
         .panel, #header-info, #score-board, #buzzer-status, .workspace, #equation-zone {
             width: 100% !important;
             max-width: 400px !important; 
@@ -50,7 +49,6 @@
         }
         .setup-row input:focus { border-color: #dc3545; outline: none; }
 
-        /* 大廳選項按鈕 */
         .game-card-container { display: flex; gap: 12px; width: 100%; }
         .game-card {
             flex: 1; background: #ffffff; border: 2px solid #cbd5e1; border-radius: 10px;
@@ -106,13 +104,12 @@
         }
         .tab-btn.active { background: #1e293b; color: white; border-color: #1e293b; }
 
-        /* 🌟 核心對齊修正：強制時間、分數、說明全部「靠左對齊」 */
         #header-info, #score-board, #buzzer-status {
             display: flex; 
-            justify-content: flex-start; /* 🌟 強制內部元素往左排列 */
+            justify-content: flex-start; 
             align-items: center;
             text-align: left;
-            margin: 0 auto 8px !important; /* 統一面板上下間距 */
+            margin: 0 auto 8px !important; 
             padding: 12px 16px !important;
             background: #ffffff;
             border-radius: 10px; 
@@ -122,13 +119,12 @@
         }
 
         #header-info { gap: 15px; font-size: 14px; font-weight: bold; }
-        .timer { color: #dc3545; background: #fef2f2; padding: 3px 10px; border-radius: 20px; } 
+        .timer { color: #dc3545; background: #fef2f2; padding: 2px 8px; border-radius: 20px; } 
 
         #score-board { font-size: 18px; font-weight: bold; color: #334155; }
         .p1-score { color: #2563eb; } 
         .p2-score { color: #7c3aed; }
 
-        /* 給狀態說明區微調底色，增加層次感 */
         #buzzer-status { font-size: 14px; font-weight: bold; background-color: #f8fafc; }
         .buzzed-p1 { background-color: #eff6ff !important; color: #2563eb !important; border-color: #bfdbfe !important; }
         .buzzed-p2 { background-color: #f5f3ff !important; color: #7c3aed !important; border-color: #e9d5ff !important; }
@@ -196,7 +192,7 @@
 <body>
 
     <div id="auth-screen" class="panel" style="display: block;">
-        <h2 id="auth-title">24點 會員登入</h2>
+        <h2 id="auth-title">🔐 24點 會員登入</h2>
         <div id="auth-msg" class="error" style="margin-bottom: 10px;"></div>
         <div class="setup-row">
             <label class="title">用戶帳號：</label>
@@ -218,7 +214,7 @@
         <div id="menu-toggle-btn" onclick="toggleSidebar(true)">☰</div>
 
         <h2>🃏 24點 遊戲大廳</h2>
-        <p style="text-align: right; color: #64748b; font-weight: bold; font-size: 13px; margin: 0 5px 10px 0;">你好~<span id="user-display" style="color: #dc3545;"></span></p>
+        <p style="text-align: right; color: #64748b; font-weight: bold; font-size: 13px; margin: 0 5px 10px 0;">操作官：<span id="user-display" style="color: #dc3545;"></span></p>
         
         <div class="setup-row">
             <label class="title">👥 選擇對戰人數：</label>
@@ -263,12 +259,12 @@
 
     <div id="sidebar-drawer">
         <div class="sidebar-header">
-            <h3>控制面板</h3>
+            <h3>⚙️ 控制面板</h3>
             <span class="sidebar-close" onclick="toggleSidebar(false)">×</span>
         </div>
-        <button onclick="fetchPersonalHistory()" class="sidebar-btn">查看歷史出題紀錄</button>
-        <button onclick="openPasswordModal()" class="sidebar-btn">安全修改密碼</button>
-        <button onclick="handleLogout()" class="sidebar-btn logout">離開遊戲</button>
+        <button onclick="fetchPersonalHistory()" class="sidebar-btn">📜 查看歷史出題紀錄</button>
+        <button onclick="openPasswordModal()" class="sidebar-btn">🔒 安全修改密碼</button>
+        <button onclick="handleLogout()" class="sidebar-btn logout">🚪 離開遊戲 (安全登出)</button>
     </div>
 
     <div id="game-screen">
@@ -749,18 +745,28 @@
                     saveGameStatsToServer(activePlayer === 1 ? 1 : 0, activePlayer === 2 ? 1 : 0, currentCards, originalEquationString);
                     setTimeout(processNextRound, 1500);
                 } else {
-                    msgBox.innerHTML = `<span class='error'>❌ 運算結果為 ${result} 部署失敗！${playMode==='single'?'重新修正算式':'重新開放搶答'}</span>`;
-                    if (playMode === 'battle') { setTimeout(() => { clearEquationZone(); resetBuzzer(); }, 2000); }
+                    // 🌟 修正：算錯時，單人與雙人模式皆會自動重置卡牌歸位
+                    msgBox.innerHTML = `<span class='error'>❌ 運算結果為 ${result} 部署失敗！卡牌重置中...</span>`;
+                    setTimeout(() => { 
+                        clearEquationZone(); 
+                        if (playMode === 'battle') resetBuzzer(); 
+                        else document.getElementById('msg-box').innerHTML = ''; 
+                    }, 1500);
                 }
             } catch (e) {
-                msgBox.innerHTML = "<span class='error'>❌ 算式鏈結錯誤，請重新排列！</span>";
-                if (playMode === 'battle') { setTimeout(() => { clearEquationZone(); resetBuzzer(); }, 2000); }
+                // 🌟 修正：格式錯誤時，單人與雙人模式皆會自動重置卡牌歸位
+                msgBox.innerHTML = "<span class='error'>❌ 算式結構錯誤，請重新排列！卡牌重置中...</span>";
+                setTimeout(() => { 
+                    clearEquationZone(); 
+                    if (playMode === 'battle') resetBuzzer(); 
+                    else document.getElementById('msg-box').innerHTML = ''; 
+                }, 1500);
             }
         }
 
         function skipRound() {
             let currentCards = Array.from(document.querySelectorAll('.card')).map(c => parseInt(c.dataset.val));
-            saveGameStatsToServer(0, 0, currentCards, '聯');
+            saveGameStatsToServer(0, 0, currentCards, '無');
             processNextRound();
         }
 
