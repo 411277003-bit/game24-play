@@ -3,172 +3,200 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>24點 全端會員對戰版</title>
+    <title>24點 現代明亮撲克版</title>
     <style>
         body {
             font-family: "Microsoft JhengHei", Arial, sans-serif;
-            background-color: #f4f7f6;
-            color: #333;
+            background-color: #f1f5f9; 
+            background-image: radial-gradient(#ffffff 40%, #e2e8f0 90%); 
+            color: #334155; 
             text-align: center;
-            padding: 20px;
+            padding: 10px;
             margin: 0;
             user-select: none;
-        }
-        h2 { color: #2c3e50; margin-bottom: 10px; }
-        
-        /* 畫面區塊控制 */
-        #auth-screen, #setup-screen, #game-screen, #end-screen { display: none; }
-        
-        /* 表單與面板基礎樣式 */
-        .panel {
-            background: #fff;
-            max-width: 400px;
-            margin: 40px auto;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-        }
-        .setup-row { margin-bottom: 20px; text-align: left; }
-        .setup-row label.title { font-weight: bold; display: block; margin-bottom: 8px; }
-        
-        .setup-row input[type="text"], .setup-row input[type="password"], .setup-row input[type="number"], .setup-row select { 
-            width: 90%; padding: 10px; font-size: 16px; border-radius: 6px; border: 1px solid #ccc; box-sizing: border-box;
-        }
-        
-        .mode-options { display: flex; gap: 20px; font-size: 18px; padding-bottom: 10px; border-bottom: 2px dashed #eee; margin-bottom: 15px;}
-        .mode-options label { cursor: pointer; }
-
-        /* 遊戲主畫面 */
-        #header-info {
-            display: flex;
-            justify-content: space-between;
-            max-width: 800px;
-            margin: 0 auto 10px;
-            font-size: 18px;
-            font-weight: bold;
-            background: #fff;
-            padding: 10px 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-        .timer { color: #e74c3c; }
-        
-        #score-board {
-            font-size: 24px;
-            font-weight: bold;
-            margin: 10px auto 20px;
-            padding: 15px;
-            background: #fff;
-            border-radius: 8px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            display: inline-block;
-            width: 80%;
-            max-width: 600px;
-        }
-        .p1-score { color: #2980b9; }
-        .p2-score { color: #8e44ad; }
-
-        #buzzer-status {
-            font-size: 22px;
-            font-weight: bold;
-            color: #d35400;
-            margin: 10px 0;
-            padding: 10px;
-            border-radius: 8px;
-            background-color: #fdebd0;
-            transition: all 0.3s;
-        }
-        .buzzed-p1 { background-color: #d6eaf8 !important; color: #2980b9 !important; }
-        .buzzed-p2 { background-color: #f4ecf8 !important; color: #8e44ad !important; }
-
-        /* 工作區 */
-        .workspace {
+            min-height: 100vh;
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 20px;
-            pointer-events: none;
-            opacity: 0.5;
-            transition: opacity 0.3s;
-        }
-        .workspace.active { pointer-events: auto; opacity: 1; }
-
-        #cards-container, #operators-container {
-            display: flex;
             justify-content: center;
-            gap: 15px;
-            min-height: 120px;
+            overflow: hidden; 
         }
-        #operators-container { min-height: auto; margin-bottom: 10px; }
+        h2 { color: #1e293b; margin: 0 0 5px 0; font-weight: bold; font-size: 24px; }
+        
+        #auth-screen, #setup-screen, #game-screen, #end-screen { display: none; }
+        
+        /* 🌟 核心統一：面板與遊戲元件寬度對齊 */
+        .panel, #header-info, #score-board, #buzzer-status, .workspace, #equation-zone {
+            width: 100% !important;
+            max-width: 400px !important; 
+            margin-left: auto !important;
+            margin-right: auto !important;
+            box-sizing: border-box !important;
+        }
+
+        .panel {
+            background: transparent; 
+            padding: 10px;
+            border: none; 
+            position: relative;
+        }
+        
+        .setup-row { margin-bottom: 10px; text-align: left; width: 100%; }
+        .setup-row label.title { font-weight: bold; display: block; margin-bottom: 4px; color: #475569; font-size: 13px; }
+        
+        .setup-row input[type="text"], .setup-row input[type="password"], .setup-row input[type="number"] { 
+            width: 100%; padding: 10px; font-size: 14px; border-radius: 8px; border: 2px solid #cbd5e1; 
+            box-sizing: border-box; background-color: #ffffff; color: #1e293b; font-weight: bold; transition: all 0.2s;
+        }
+        .setup-row input:focus { border-color: #dc3545; outline: none; }
+
+        /* 大廳選項按鈕 */
+        .game-card-container { display: flex; gap: 12px; width: 100%; }
+        .game-card {
+            flex: 1; background: #ffffff; border: 2px solid #cbd5e1; border-radius: 10px;
+            padding: 10px 5px; text-align: center; cursor: pointer; position: relative;
+            display: flex; flex-direction: column; align-items: center; gap: 4px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+        }
+        .game-card:hover { 
+            transform: translateY(-5px); 
+            border-color: #94a3b8;
+            box-shadow: 0 8px 15px rgba(0,0,0,0.1);
+        }
+        .game-card.active { 
+            border-color: #d4af37; 
+            background-color: #fffdf5;
+            transform: translateY(-4px);
+            box-shadow: 0 6px 12px rgba(214,175,55,0.2);
+        }
+        .game-card .icon { font-size: 20px; }
+        .game-card .text { font-size: 13px; font-weight: bold; color: #334155; }
+
+        #menu-toggle-btn {
+            position: absolute; top: -5px; right: 5px; font-size: 16px; cursor: pointer;
+            background: #ffffff; border: 2px solid #cbd5e1; border-radius: 50%; width: 34px; height: 34px;
+            display: flex; align-items: center; justify-content: center; color: #475569;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.08); transition: all 0.2s;
+        }
+        
+        #sidebar-drawer {
+            position: fixed; top: 0; right: -280px; width: 260px; height: 100%;
+            background: #ffffff; box-shadow: -10px 0 30px rgba(0,0,0,0.08);
+            transition: right 0.25s ease-out; padding: 25px 20px;
+            box-sizing: border-box; z-index: 90; text-align: left; border-left: 4px solid #d4af37;
+        }
+        #sidebar-drawer.open { right: 0; }
+        .sidebar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; border-bottom: 2px solid #f1f5f9; padding-bottom: 10px; }
+        .sidebar-header h3 { margin: 0; color: #1e293b; font-weight: bold; font-size: 18px; }
+        .sidebar-close { font-size: 26px; cursor: pointer; color: #94a3b8; font-weight: bold; }
+        
+        .sidebar-btn {
+            width: 100%; padding: 12px 15px; background: #ffffff; border: 2px solid #e2e8f0;
+            color: #334155; border-radius: 10px; font-size: 14px; font-weight: bold; cursor: pointer;
+            margin-bottom: 12px; text-align: left; display: flex; align-items: center; gap: 10px; transition: all 0.2s;
+        }
+        .sidebar-btn:hover { background: #f8fafc; border-color: #94a3b8; transform: translateX(-2px); }
+        .sidebar-btn.logout { background: #fef2f2; border-color: #fee2e2; color: #ef4444; }
+
+        .history-tabs { display: flex; gap: 10px; margin-bottom: 15px; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; }
+        .tab-btn {
+            flex: 1; padding: 10px 5px; font-size: 13px; font-weight: bold; cursor: pointer; border: 2px solid #cbd5e1;
+            border-radius: 8px; background: #ffffff; color: #475569; transition: all 0.15s; text-align: center;
+        }
+        .tab-btn.active { background: #1e293b; color: white; border-color: #1e293b; }
+
+        /* 🌟 核心對齊修正：強制時間、分數、說明全部「靠左對齊」 */
+        #header-info, #score-board, #buzzer-status {
+            display: flex; 
+            justify-content: flex-start; /* 🌟 強制內部元素往左排列 */
+            align-items: center;
+            text-align: left;
+            margin: 0 auto 8px !important; /* 統一面板上下間距 */
+            padding: 12px 16px !important;
+            background: #ffffff;
+            border-radius: 10px; 
+            border: 2px solid #cbd5e1; 
+            box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+            color: #1e293b;
+        }
+
+        #header-info { gap: 15px; font-size: 14px; font-weight: bold; }
+        .timer { color: #dc3545; background: #fef2f2; padding: 3px 10px; border-radius: 20px; } 
+
+        #score-board { font-size: 18px; font-weight: bold; color: #334155; }
+        .p1-score { color: #2563eb; } 
+        .p2-score { color: #7c3aed; }
+
+        /* 給狀態說明區微調底色，增加層次感 */
+        #buzzer-status { font-size: 14px; font-weight: bold; background-color: #f8fafc; }
+        .buzzed-p1 { background-color: #eff6ff !important; color: #2563eb !important; border-color: #bfdbfe !important; }
+        .buzzed-p2 { background-color: #f5f3ff !important; color: #7c3aed !important; border-color: #e9d5ff !important; }
+
+        .workspace { display: flex; flex-direction: column; align-items: center; gap: 10px; pointer-events: none; opacity: 0.3; transition: opacity 0.3s; margin: 0 auto !important;}
+        .workspace.active { pointer-events: auto; opacity: 1; }
+        #cards-container, #operators-container { display: flex; justify-content: center; gap: 10px; min-height: 110px; width: 100%; }
+        #operators-container { min-height: auto; margin-bottom: 2px; gap: 8px; }
 
         .draggable-item {
-            background: #fff;
-            border: 2px solid #ccc;
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            cursor: pointer;
-            box-shadow: 2px 2px 8px rgba(0,0,0,0.1);
-            transition: transform 0.1s;
+            background: #ffffff; border: 2px solid #cbd5e1; border-radius: 10px; display: flex; align-items: center; justify-content: center;
+            font-weight: bold; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.05); transition: transform 0.1s, border-color 0.15s; color: #1e293b;
+            overflow: hidden;
         }
-        .draggable-item:hover { transform: scale(1.05); border-color: #3498db; }
-        .draggable-item:active { transform: scale(0.95); }
-
-        .card { width: 80px; height: 120px; font-size: 28px; flex-direction: column; }
-        .operator { width: 50px; height: 50px; font-size: 24px; border-radius: 50%; color: #34495e; }
+        .draggable-item:hover { transform: translateY(-3px); border-color: #dc3545; }
         
-        .red { color: #e74c3c; }
-        .black { color: #2c3e50; }
+        .card { 
+            width: 78px; height: 112px; flex-direction: column; justify-content: space-between; padding: 5px 0; background: #ffffff; 
+            animation: dealCard 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.15) backwards;
+        }
+        @keyframes dealCard {
+            from { transform: translateY(40px) rotate(10deg); opacity: 0; }
+            to { transform: translateY(0) rotate(0deg); opacity: 1; }
+        }
+
+        .operator { width: 44px; height: 44px; font-size: 20px; border-radius: 50%; color: #475569; background: #f1f5f9; border-color: #cbd5e1; }
+        
+        .red { color: #dc3545; } 
+        .black { color: #1e293b; } 
 
         #equation-zone {
-            width: 80%; max-width: 600px; min-height: 80px; background: #fff;
-            border: 3px dashed #bdc3c7; border-radius: 12px; margin: 20px auto;
-            display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 10px; padding: 15px;
-            font-size: 32px; font-family: monospace;
+            background: #f8fafc; border: 2px dashed #cbd5e1; border-radius: 12px; min-height: 60px;
+            margin: 0 auto 10px !important; display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 6px; padding: 10px;
         }
-        #equation-zone.dragover { background-color: #ecf0f1; border-color: #3498db; }
+        .eq-item { background: #ffffff; padding: 5px 12px; border-radius: 8px; cursor: pointer; font-weight: bold; color: #1e293b; border: 2px solid #e2e8f0; }
+        .eq-item:hover { background: #dc3545; color: #fff; border-color: #dc3545; }
+
+        .controls { margin: 8px 0; display: flex; justify-content: center; gap: 10px; width: 100%; }
         
-        .eq-item {
-            background: #ecf0f1; padding: 5px 15px; border-radius: 8px;
-            cursor: pointer; box-shadow: 1px 1px 3px rgba(0,0,0,0.2); font-weight: bold;
+        button { 
+            padding: 10px 26px; font-size: 15px; font-weight: bold; cursor: pointer; border: none; border-radius: 10px; 
+            background-color: #dc3545; color: white; transition: all 0.15s; box-shadow: 0 4px 6px rgba(220,53,69,0.15);
         }
-        .eq-item:hover { background: #e74c3c; color: white; }
+        button:hover { background-color: #bd2130; transform: translateY(-1px); }
+        button:active { transform: translateY(1px); } 
+        
+        .btn-home { background-color: #64748b; box-shadow: 0 4px 6px rgba(100,116,139,0.15); }
+        .btn-home:hover { background-color: #475569; }
 
-        .controls { margin: 20px 0; display: flex; justify-content: center; gap: 15px; }
-        button {
-            padding: 12px 25px; font-size: 18px; font-weight: bold; cursor: pointer;
-            border: none; border-radius: 8px; background-color: #27ae60; color: white; transition: background 0.3s;
-        }
-        button:hover { background-color: #2ecc71; }
-        .btn-home { background-color: #7f8c8d; }
-        .btn-home:hover { background-color: #95a5a6; }
-        .btn-history { background-color: #2980b9; margin-top: 10px; width: 100%;}
-        .btn-history:hover { background-color: #3498db; }
-        .btn-logout { background-color: #e74c3c; margin-top: 10px; width: 100%; }
-        .btn-logout:hover { background-color: #c0392b; }
+        #msg-box { font-size: 15px; font-weight: bold; min-height: 22px; margin: 4px; }
+        .success { color: #15803d; }
+        .error { color: #b91c1c; }
 
-        #msg-box { font-size: 18px; font-weight: bold; min-height: 25px; margin: 10px; }
-        .success { color: #27ae60; }
-        .error { color: #e74c3c; }
-
-        /* 歷史紀錄彈出面板 */
-        #history-modal {
+        #history-modal, #password-modal {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.5); justify-content: center; align-items: center; z-index: 100;
+            background: rgba(15,23,42,0.4); justify-content: center; align-items: center; z-index: 100; backdrop-filter: blur(4px);
         }
         .modal-content {
-            background: white; padding: 25px; border-radius: 12px; width: 80%; max-width: 500px;
-            max-height: 70vh; overflow-y: auto; text-align: left;
+            background: #ffffff; padding: 25px; border-radius: 20px; width: 85%; max-width: 420px;
+            max-height: 70vh; overflow-y: auto; text-align: left; border: 1px solid #e2e8f0; color: #1e293b;
         }
-        .history-item { border-bottom: 1px solid #eee; padding: 10px 0; font-size: 15px; }
+        .history-item { border-bottom: 2px solid #f1f5f9; padding: 12px 0; font-size: 14px; color: #475569; line-height: 1.6; }
     </style>
 </head>
 <body>
 
     <div id="auth-screen" class="panel" style="display: block;">
-        <h2>🔐 24點 會員登入</h2>
+        <h2 id="auth-title">24點 會員登入</h2>
         <div id="auth-msg" class="error" style="margin-bottom: 10px;"></div>
         <div class="setup-row">
             <label class="title">用戶帳號：</label>
@@ -178,45 +206,69 @@
             <label class="title">用戶密碼：</label>
             <input type="password" id="auth-password" placeholder="請輸入密碼">
         </div>
-        <div style="display: flex; gap: 15px; justify-content: center;">
-            <button onclick="handleAuth('login')">立即登入</button>
-            <button onclick="handleAuth('register')" style="background-color: #e67e22;">註冊帳號</button>
+        <div style="margin-top: 15px;">
+            <button id="auth-submit-btn" onclick="submitAuth()" style="width: 100%; padding: 12px;">立即登入</button>
         </div>
+        <p id="auth-toggle-text" style="margin-top: 15px; font-size: 14px; color: #64748b; font-weight: bold;">
+            還沒有帳號嗎？ <span onclick="switchAuthMode('register')" style="color: #dc3545; cursor: pointer; text-decoration: underline;">立即註冊</span>
+        </p>
     </div>
 
     <div id="setup-screen" class="panel">
+        <div id="menu-toggle-btn" onclick="toggleSidebar(true)">☰</div>
+
         <h2>🃏 24點 遊戲大廳</h2>
-        <p style="text-align: right; color: #7f8c8d; font-weight: bold;">歡迎，<span id="user-display" style="color: #27ae60;"></span>！</p>
+        <p style="text-align: right; color: #64748b; font-weight: bold; font-size: 13px; margin: 0 5px 10px 0;">你好~<span id="user-display" style="color: #dc3545;"></span></p>
         
         <div class="setup-row">
-            <label class="title">選擇遊玩模式：</label>
-            <div class="mode-options">
-                <label><input type="radio" name="playMode" value="single" checked onchange="togglePlayMode()"> 🧘 單人獨享</label>
-                <label><input type="radio" name="playMode" value="battle" onchange="togglePlayMode()"> ⚔️ 雙人對戰</label>
+            <label class="title">👥 選擇對戰人數：</label>
+            <div class="game-card-container">
+                <div class="game-card active" id="card-play-single" onclick="selectPlayMode('single')">
+                    <span class="icon">🧘</span>
+                    <span class="text">單人獨享</span>
+                </div>
+                <div class="game-card" id="card-play-battle" onclick="selectPlayMode('battle')">
+                    <span class="icon">⚔️</span>
+                    <span class="text">雙人對戰</span>
+                </div>
             </div>
         </div>
 
         <div class="setup-row">
-            <label class="title">選擇比賽依據：</label>
-            <div class="mode-options">
-                <label><input type="radio" name="gameMode" value="rounds" checked onchange="toggleGameMode()"> 指定題數</label>
-                <label><input type="radio" name="gameMode" value="time" onchange="toggleGameMode()"> 指定時間</label>
+            <label class="title">🎯 選擇勝利判定依據：</label>
+            <div class="game-card-container">
+                <div class="game-card active" id="card-game-rounds" onclick="selectGameMode('rounds')">
+                    <span class="icon">📝</span>
+                    <span class="text">指定題數</span>
+                </div>
+                <div class="game-card" id="card-game-time" onclick="selectGameMode('time')">
+                    <span class="icon">⏳</span>
+                    <span class="text">指定時間</span>
+                </div>
             </div>
         </div>
 
         <div class="setup-row" id="row-rounds">
-            <label class="title">輸入總題數：</label>
-            <input type="number" id="sel-rounds" value="10" min="1" max="99" placeholder="例如：10">
+            <label class="title">調整總出題數：</label>
+            <input type="number" id="sel-rounds" value="10" min="1" max="99">
         </div>
 
         <div class="setup-row" id="row-time" style="display: none;">
-            <label class="title">輸入遊戲時間 (單位：分鐘)：</label>
-            <input type="number" id="sel-time" value="3" min="1" max="60" placeholder="例如：3">
+            <label class="title">調整限制時間 (單位：分鐘)：</label>
+            <input type="number" id="sel-time" value="3" min="1" max="60">
         </div>
 
-        <button onclick="initGame()" style="width: 100%;">開始遊戲</button>
-        <button onclick="fetchPersonalHistory()" class="btn-history">📜 查看歷史出題紀錄</button>
-        <button onclick="handleLogout()" class="btn-logout">🚪 離開遊戲 (回登入畫面)</button>
+        <button onclick="initGame()" style="width: 100%; padding: 12px; font-size: 18px; margin-top: 5px;">啟動戰局</button>
+    </div>
+
+    <div id="sidebar-drawer">
+        <div class="sidebar-header">
+            <h3>控制面板</h3>
+            <span class="sidebar-close" onclick="toggleSidebar(false)">×</span>
+        </div>
+        <button onclick="fetchPersonalHistory()" class="sidebar-btn">查看歷史出題紀錄</button>
+        <button onclick="openPasswordModal()" class="sidebar-btn">安全修改密碼</button>
+        <button onclick="handleLogout()" class="sidebar-btn logout">離開遊戲</button>
     </div>
 
     <div id="game-screen">
@@ -226,7 +278,7 @@
         </div>
 
         <div id="score-board">
-            <span class="p1-score" id="p1-title">玩家一: <span id="score1">0</span></span>
+            <span class="p1-score" id="p1-title">玩家挑戰分數: <span id="score1">0</span></span>
             <span id="p2-score-divider"> &nbsp; | &nbsp; </span>
             <span class="p2-score" id="p2-title">玩家二 (M鍵): <span id="score2">0</span></span>
         </div>
@@ -244,34 +296,53 @@
                 <div class="draggable-item operator" draggable="true" data-type="op" data-val="(">(</div>
                 <div class="draggable-item operator" draggable="true" data-type="op" data-val=")">)</div>
             </div>
-            <p style="margin-bottom: 5px; color: #7f8c8d;">▼ 將卡片與符號拖曳至此 (或直接點擊) / 點擊下方區塊可退回 ▼</p>
+            <p style="margin-bottom: 5px; color: #64748b; font-size: 12px; font-weight: bold;">▼ 將卡片與符號拖曳至此 (或直接點擊) / 點擊下方區塊可退回 ▼</p>
             <div id="equation-zone"></div>
         </div>
 
         <div class="controls">
-            <button id="skip-btn" onclick="skipRound()">⏭️ 放棄跳過</button>
-            <button class="btn-home" onclick="returnToLobby()">🏠 返回主選單</button>
+            <button id="skip-btn" onclick="skipRound()" style="background-color: #475569; box-shadow: none;">⏭️ 放棄跳過</button>
+            <button class="btn-home" onclick="returnToLobby()">🏠 返回大廳</button>
         </div>
     </div>
 
     <div id="end-screen" class="panel">
-        <h1>🏆 遊戲結束</h1>
+        <h1>🏆 戰局結束</h1>
         <h2 id="final-result"></h2>
         <br>
-        <button class="btn-home" onclick="returnToLobby()">🏠 返回主選單</button>
+        <button class="btn-home" onclick="returnToLobby()">🏠 返回大廳</button>
     </div>
 
     <div id="history-modal">
         <div class="modal-content">
-            <h2 style="margin-top:0;">📜 我的算題歷史明細</h2>
-            <div id="history-list">讀取中...</div>
+            <h2 style="margin-top:0; color:#1e293b; font-weight:bold;">📜 戰績歷史出題明細</h2>
+            
+            <div class="history-tabs">
+                <div class="tab-btn active" id="tab-single" onclick="switchHistoryTab('single')">🧘 單人紀錄</div>
+                <div class="tab-btn" id="tab-battle" onclick="switchHistoryTab('battle')">⚔️ 雙人紀錄</div>
+            </div>
+
+            <div id="history-list" style="max-height: 45vh; overflow-y: auto; padding-right:5px;">讀取中...</div>
             <br>
-            <button onclick="document.getElementById('history-modal').style.display='none'" style="background-color:#7f8c8d; width:100%;">關閉視窗</button>
+            <button onclick="document.getElementById('history-modal').style.display='none'" class="btn-home" style="width:100%;">關閉視窗</button>
+        </div>
+    </div>
+
+    <div id="password-modal">
+        <div class="modal-content">
+            <h2 style="margin-top:0; color:#1e293b;">🔒 修改帳號密碼</h2>
+            <div id="pwd-modal-msg" class="error" style="margin-bottom: 10px;"></div>
+            <div class="setup-row">
+                <label class="title">輸入全新密碼：</label>
+                <input type="password" id="new-password" placeholder="請輸入新密碼">
+            </div>
+            <br>
+            <button onclick="submitNewPassword()" style="width: 100%; padding: 12px; background-color: #dc3545; box-shadow: none;">確認重設密碼</button>
+            <button onclick="document.getElementById('password-modal').style.display='none'" class="btn-home" style="width:100%; margin-top: 12px;">取消關閉</button>
         </div>
     </div>
 
     <script>
-        // 確保網址為 lc7l 
         const BACKEND_URL = 'https://two4point-lc7l.onrender.com';
 
         const suits = ['♠', '♥', '♦', '♣'];
@@ -279,6 +350,7 @@
         let scores = { 1: 0, 2: 0 };
         
         let currentUser = '';
+        let authMode = 'login'; 
         let playMode = 'single'; 
         let gameMode = 'rounds'; 
         let totalRounds = 10;
@@ -288,6 +360,84 @@
         
         let activePlayer = null; 
         let cardsUsedCount = 0;
+        let globalHistoryData = [];
+
+        function toggleSidebar(open) {
+            const drawer = document.getElementById('sidebar-drawer');
+            if (open) drawer.classList.add('open');
+            else drawer.classList.remove('open');
+        }
+
+        function selectPlayMode(mode) {
+            playMode = mode;
+            document.getElementById('card-play-single').classList.remove('active');
+            document.getElementById('card-play-battle').classList.remove('active');
+            document.getElementById(`card-play-${mode}`).classList.add('active');
+        }
+
+        function selectGameMode(mode) {
+            gameMode = mode;
+            document.getElementById('card-game-rounds').classList.remove('active');
+            document.getElementById('card-game-time').classList.remove('active');
+            document.getElementById(`card-game-${mode}`).classList.add('active');
+            
+            document.getElementById('row-rounds').style.display = (mode === 'rounds') ? 'block' : 'none';
+            document.getElementById('row-time').style.display = (mode === 'time') ? 'block' : 'none';
+        }
+
+        function openPasswordModal() {
+            document.getElementById('password-modal').style.display = 'flex';
+            document.getElementById('new-password').value = '';
+            document.getElementById('pwd-modal-msg').innerText = '';
+        }
+
+        async function submitNewPassword() {
+            const newPwd = document.getElementById('new-password').value.trim();
+            const msgBox = document.getElementById('pwd-modal-msg');
+            if (!newPwd) {
+                msgBox.innerText = '⚠️ 密碼欄位不能留空！';
+                return;
+            }
+            try {
+                const res = await fetch(`${BACKEND_URL}/api/update-password`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username: currentUser, newPassword: newPwd })
+                });
+                const data = await res.json();
+                if (!res.ok) {
+                    msgBox.innerText = data.message;
+                } else {
+                    alert(data.message);
+                    document.getElementById('password-modal').style.display = 'none';
+                }
+            } catch (e) {
+                msgBox.innerText = '🔴 雲端伺服器連線中斷，請重試！';
+            }
+        }
+
+        function switchAuthMode(mode) {
+            authMode = mode;
+            const title = document.getElementById('auth-title');
+            const btn = document.getElementById('auth-submit-btn');
+            const toggleText = document.getElementById('auth-toggle-text');
+            const msgBox = document.getElementById('auth-msg');
+            msgBox.innerText = ''; 
+            
+            if (mode === 'login') {
+                title.innerText = '🔐 24點 會員登入';
+                btn.innerText = '立即登入';
+                btn.style.backgroundColor = '#dc3545';
+                toggleText.innerHTML = `還沒有帳號嗎？ <span onclick="switchAuthMode('register')" style="color: #dc3545; cursor: pointer; text-decoration: underline;">立即註冊</span>`;
+            } else {
+                title.innerText = '📝 24點 會員註冊';
+                btn.innerText = '立即註冊';
+                btn.style.backgroundColor = '#e67e22';
+                toggleText.innerHTML = `已經有帳號了？ <span onclick="switchAuthMode('login')" style="color: #dc3545; cursor: pointer; text-decoration: underline;">立即登入</span>`;
+            }
+        }
+
+        function submitAuth() { handleAuth(authMode); }
 
         async function handleAuth(type) {
             const userInp = document.getElementById('auth-username').value.trim();
@@ -316,6 +466,8 @@
                         document.getElementById('user-display').innerText = currentUser;
                         document.getElementById('auth-screen').style.display = 'none';
                         document.getElementById('setup-screen').style.display = 'block';
+                    } else {
+                        switchAuthMode('login');
                     }
                 }
             } catch (e) {
@@ -323,67 +475,56 @@
             }
         }
 
-        // 🌟 核心防護加強版：欄位做最極致的防呆（如 winner?.includes ），並在出錯時直接輸出真因
         async function fetchPersonalHistory() {
+            toggleSidebar(false); 
             const modal = document.getElementById('history-modal');
             const listContainer = document.getElementById('history-list');
             modal.style.display = 'flex';
-            listContainer.innerHTML = '正在從雲端同步明細...';
+            listContainer.innerHTML = '正在從雲端數據庫抽取歷史明細...';
 
             try {
                 const res = await fetch(`${BACKEND_URL}/api/history?username=${encodeURIComponent(currentUser)}`);
-                
                 if (!res.ok) {
                     const errData = await res.json().catch(() => ({}));
-                    listContainer.innerHTML = `❌ 雲端伺服器回應錯誤 (代碼 ${res.status})：${errData.message || '無法取得數據'}`;
+                    listContainer.innerHTML = `❌ 雲端回應錯誤：${errData.message || '無法取得數據'}`;
                     return;
                 }
-
-                const data = await res.json();
-
-                if (!Array.isArray(data)) {
-                    listContainer.innerHTML = '❌ 資料格式異常：雲端回傳的資料不是陣列。';
-                    return;
-                }
-
-                if (data.length === 0) {
-                    listContainer.innerHTML = '🫙 目前尚無任何算題紀錄。快去玩一局吧！';
-                    return;
-                }
-
-                listContainer.innerHTML = data.map((item, idx) => {
-                    // 超強安全閥：確保陣列與字串存在，欄位缺失也絕不當機
-                    const cardsDisplay = Array.isArray(item.cards) ? item.cards.join(', ') : '未知卡牌';
-                    const modeDisplay = item.gameMode === 'single' ? '單人獨享' : '雙人對戰';
-                    const winnerDisplay = item.winner || '平手/未紀錄';
-                    
-                    const isFailed = winnerDisplay.includes('失敗') || winnerDisplay.includes('放棄');
-                    const textColor = isFailed ? '#e74c3c' : '#27ae60';
-
-                    return `
-                        <div class="history-item">
-                            <strong>第 ${data.length - idx} 筆紀錄</strong> (${item.playedAt ? new Date(item.playedAt).toLocaleString() : '未知時間'})<br>
-                            🎴 出題數字: [ ${cardsDisplay} ]<br>
-                            🎮 模式: ${modeDisplay}<br>
-                            🏁 結果狀態: <span style="color:${textColor}">${winnerDisplay}</span>
-                        </div>
-                    `;
-                }).join('');
+                globalHistoryData = await res.json();
+                switchHistoryTab('single');
             } catch (e) {
-                // 核心改動：直接印出 JavaScript 報錯的真因，不再用罐頭訊息擋住
-                listContainer.innerHTML = `❌ 網頁執行或連線發生錯誤！<br>原因：${e.message}`;
-                console.error("詳細錯誤明細：", e);
+                listContainer.innerHTML = `❌ 網路連線錯誤！原因：${e.message}`;
             }
         }
 
-        function togglePlayMode() {
-            playMode = document.querySelector('input[name="playMode"]:checked').value;
-        }
+        function switchHistoryTab(mode) {
+            document.getElementById('tab-single').classList.add('active');
+            document.getElementById('tab-battle').classList.add('active');
+            if(mode === 'single') document.getElementById('tab-battle').classList.remove('active');
+            else document.getElementById('tab-single').classList.remove('active');
 
-        function toggleGameMode() {
-            gameMode = document.querySelector('input[name="gameMode"]:checked').value;
-            document.getElementById('row-rounds').style.display = (gameMode === 'rounds') ? 'block' : 'none';
-            document.getElementById('row-time').style.display = (gameMode === 'time') ? 'block' : 'none';
+            const listContainer = document.getElementById('history-list');
+            const filteredData = globalHistoryData.filter(item => item.gameMode === mode);
+
+            if (filteredData.length === 0) {
+                listContainer.innerHTML = `🫙 目前尚無任何${mode === 'single' ? '單人獨享' : '雙人對戰'}的算題明細。`;
+                return;
+            }
+
+            listContainer.innerHTML = filteredData.map((item, idx) => {
+                const cardsDisplay = Array.isArray(item.cards) ? item.cards.join(', ') : '未知';
+                const winnerDisplay = item.winner || '平手';
+                const equationDisplay = item.equation || '無'; 
+                const isFailed = winnerDisplay.includes('失敗') || winnerDisplay.includes('放棄');
+
+                return `
+                    <div class="history-item">
+                        📅 <strong>日期：</strong>${item.playedAt ? new Date(item.playedAt).toLocaleString() : '未知'}<br>
+                        🎴 <strong>數字：</strong>[ ${cardsDisplay} ]<br>
+                        🧮 <strong>算法：</strong><span style="font-family: monospace; font-size:15px; font-weight:bold; color:#dc3545;">${equationDisplay}</span><br>
+                        🏁 <strong>結果：</strong><span style="color:${isFailed ? '#dc3545' : '#15803d'}; font-weight:bold;">${winnerDisplay}</span>
+                    </div>
+                `;
+            }).join('');
         }
 
         function hasSolution(nums) {
@@ -417,7 +558,7 @@
                 document.getElementById('p1-title').innerHTML = `玩家挑戰分數: <span id="score1">0</span>`;
                 document.getElementById('p2-score-divider').style.display = 'none';
                 document.getElementById('p2-title').style.display = 'none';
-                document.getElementById('skip-btn').innerText = '⏭️ 放棄本題 (扣分並跳過)';
+                document.getElementById('skip-btn').innerText = '⏭️ 放棄本題 (跳過)';
             } else {
                 document.getElementById('p1-title').innerHTML = `玩家一 (Z鍵): <span id="score1">0</span>`;
                 document.getElementById('p2-score-divider').style.display = 'inline';
@@ -434,7 +575,6 @@
                 let minutesInput = parseInt(document.getElementById('sel-time').value) || 3;
                 if (minutesInput < 1) minutesInput = 1;
                 timeRemaining = minutesInput * 60; 
-                
                 document.getElementById('mode-display-container').innerHTML = `📝 已答題數: <span id="round-display">1</span>`;
                 document.getElementById('time-display-container').innerHTML = `⏳ 剩餘時間: <span id="time-display">00:00</span>`;
                 
@@ -448,7 +588,6 @@
 
             document.getElementById('setup-screen').style.display = 'none';
             document.getElementById('game-screen').style.display = 'block';
-
             drawCards();
             setupDragAndDrop();
         }
@@ -465,32 +604,25 @@
             document.getElementById('round-display').innerText = currentRound;
             document.getElementById('equation-zone').innerHTML = '';
             cardsUsedCount = 0;
-            
-            let isValid = false;
-            let tempCards = [];
-            let drawnObjects = [];
+            let isValid = false; let tempCards = []; let drawnObjects = [];
 
             while (!isValid) {
                 deck = [];
                 for (let i = 1; i <= 13; i++) for (let suit of suits) deck.push({ value: i, suit: suit });
-                tempCards = [];
-                drawnObjects = [];
+                tempCards = []; drawnObjects = [];
                 for (let i = 0; i < 4; i++) {
                     let card = deck.splice(Math.floor(Math.random() * deck.length), 1)[0];
-                    tempCards.push(card.value);
-                    drawnObjects.push(card);
+                    tempCards.push(card.value); drawnObjects.push(card);
                 }
                 if (hasSolution(tempCards)) isValid = true;
             }
-
             renderCards(drawnObjects);
             
             if(playMode === 'single') {
                 activePlayer = 1; 
                 document.getElementById('workspace').classList.add('active');
-                let status = document.getElementById('buzzer-status');
-                status.innerText = "🧩 單人挑戰中：請排出能組成 24 的算式後，按【空白鍵】送出驗證！";
-                status.className = '';
+                document.getElementById('buzzer-status').innerText = "🧩 單人挑戰模式：請排出 24 點後，按【空白鍵】送出驗證！";
+                document.getElementById('buzzer-status').className = '';
                 document.getElementById('msg-box').innerText = '';
             } else {
                 resetBuzzer();
@@ -507,14 +639,22 @@
                 else if (displayValue === 12) displayValue = 'Q';
                 else if (displayValue === 13) displayValue = 'K';
 
+                const isRedSuit = (card.suit === '♥' || card.suit === '♦');
+                const suitColor = isRedSuit ? '#dc3545' : '#1e293b';
+
                 let cardDiv = document.createElement('div');
-                cardDiv.className = `draggable-item card ${(card.suit === '♥' || card.suit === '♦') ? 'red' : 'black'}`;
-                cardDiv.draggable = true;
-                cardDiv.dataset.type = 'card';
+                cardDiv.className = `draggable-item card ${isRedSuit ? 'red' : 'black'}`;
+                cardDiv.draggable = true; 
+                cardDiv.dataset.type = 'card'; 
                 cardDiv.dataset.val = card.value; 
                 cardDiv.dataset.display = `${card.suit}${displayValue}`;
-                cardDiv.id = `card-${index}`;
-                cardDiv.innerHTML = `<span>${card.suit}</span><span>${displayValue}</span>`;
+                cardDiv.id = `card-${index}`; 
+                
+                cardDiv.innerHTML = `
+                    <div style="font-size: 16px; text-align: left; width: 100%; padding-left: 8px; box-sizing: border-box; font-weight: bold; color: ${suitColor};">${card.suit}</div>
+                    <div class="card-val" style="font-size: 32px; font-weight: bold; margin-top: -4px; margin-bottom: -4px; color: ${suitColor};">${displayValue}</div>
+                    <div style="font-size: 16px; text-align: right; width: 100%; padding-right: 8px; box-sizing: border-box; transform: rotate(180deg); font-weight: bold; color: ${suitColor};">${card.suit}</div>
+                `;
                 
                 cardDiv.onclick = () => { if(activePlayer !== null) addToEquation(cardDiv); };
                 container.appendChild(cardDiv);
@@ -524,56 +664,37 @@
         function resetBuzzer() {
             activePlayer = null;
             document.getElementById('workspace').classList.remove('active');
-            let status = document.getElementById('buzzer-status');
-            status.innerText = "⚡ 雙人對戰：請準備搶答！ (玩家一按 Z，玩家二按 M)";
-            status.className = '';
+            document.getElementById('buzzer-status').innerText = "⚡ 雙人對戰：請準備搶答！ (玩家一按 Z，玩家二按 M)";
+            document.getElementById('buzzer-status').className = '';
             document.getElementById('msg-box').innerText = '';
         }
 
         document.addEventListener('keydown', (e) => {
             if (document.getElementById('game-screen').style.display !== 'block') return;
-
             if (playMode === 'battle' && activePlayer === null) {
-                if (e.key.toLowerCase() === 'z') {
-                    activePlayer = 1;
-                    lockBuzzer(1, "🔵 玩家一 (藍方) 搶到了！請排列算式並按【空白鍵】送出");
-                } else if (e.key.toLowerCase() === 'm') {
-                    activePlayer = 2;
-                    lockBuzzer(2, "🟣 玩家二 (紫方) 搶到了！請排列算式並按【空白鍵】送出");
-                }
-            } 
-            else if (e.code === 'Space') {
-                e.preventDefault(); 
-                evaluateAnswer();
+                if (e.key.toLowerCase() === 'z') { activePlayer = 1; lockBuzzer(1, "🔵 玩家一 (藍方) 搶答中！排列後按【空白鍵】送出"); } 
+                else if (e.key.toLowerCase() === 'm') { activePlayer = 2; lockBuzzer(2, "🟣 玩家二 (紫方) 搶答中！排列後按【空白鍵】送出"); }
+            } else if (e.code === 'Space') {
+                e.preventDefault(); evaluateAnswer();
             }
         });
 
         function lockBuzzer(player, msg) {
             document.getElementById('workspace').classList.add('active');
             let status = document.getElementById('buzzer-status');
-            status.innerText = msg;
-            status.className = player === 1 ? 'buzzed-p1' : 'buzzed-p2';
+            status.innerText = msg; status.className = player === 1 ? 'buzzed-p1' : 'buzzed-p2';
         }
 
         function setupDragAndDrop() {
             let eqZone = document.getElementById('equation-zone');
-            
             document.querySelectorAll('.operator').forEach(op => {
                 op.onclick = () => { if(activePlayer !== null) addToEquation(op); };
                 op.ondragstart = (e) => dragStart(e, op);
             });
-
-            document.addEventListener('dragstart', (e) => {
-                if (e.target.classList.contains('card')) dragStart(e, e.target);
-            });
-
-            eqZone.ondragover = (e) => { e.preventDefault(); eqZone.classList.add('dragover'); };
-            eqZone.ondragleave = () => eqZone.classList.remove('dragover');
+            document.addEventListener('dragstart', (e) => { if (e.target.classList.contains('card')) dragStart(e, e.target); });
+            eqZone.ondragover = (e) => { e.preventDefault(); };
             eqZone.ondrop = (e) => {
-                e.preventDefault();
-                eqZone.classList.remove('dragover');
-                if (activePlayer === null) return;
-                
+                e.preventDefault(); if (activePlayer === null) return;
                 let sourceId = e.dataTransfer.getData("id");
                 let isOp = e.dataTransfer.getData("isOp") === "true";
                 let el = isOp ? document.querySelector(`.operator[data-val="${sourceId}"]`) : document.getElementById(sourceId);
@@ -583,35 +704,20 @@
 
         function dragStart(e, el) {
             if (activePlayer === null) { e.preventDefault(); return; }
-            let isOp = el.dataset.type === 'op';
-            e.dataTransfer.setData("id", isOp ? el.dataset.val : el.id);
-            e.dataTransfer.setData("isOp", isOp);
+            e.dataTransfer.setData("id", el.dataset.type === 'op' ? el.dataset.val : el.id);
+            e.dataTransfer.setData("isOp", el.dataset.type === 'op');
         }
 
         function addToEquation(el) {
             let isCard = el.dataset.type === 'card';
-            let val = el.dataset.val;
-            let display = isCard ? el.dataset.display : el.innerText;
-
-            if (isCard) {
-                el.style.display = 'none';
-                cardsUsedCount++;
-            }
-
+            if (isCard) { el.style.display = 'none'; cardsUsedCount++; }
             let newEqItem = document.createElement('span');
-            newEqItem.className = 'eq-item';
-            newEqItem.innerText = display;
-            newEqItem.dataset.val = val; 
+            newEqItem.className = 'eq-item'; newEqItem.innerText = isCard ? el.dataset.display : el.innerText; newEqItem.dataset.val = el.dataset.val;
             if (isCard) newEqItem.dataset.sourceId = el.id;
-
             newEqItem.onclick = function() {
-                if (this.dataset.sourceId) {
-                    document.getElementById(this.dataset.sourceId).style.display = 'flex';
-                    cardsUsedCount--;
-                }
+                if (this.dataset.sourceId) { document.getElementById(this.dataset.sourceId).style.display = 'flex'; cardsUsedCount--; }
                 this.remove();
             };
-
             document.getElementById('equation-zone').appendChild(newEqItem);
         }
 
@@ -623,129 +729,75 @@
 
         function processNextRound() {
             currentRound++;
-            if (gameMode === 'rounds' && currentRound > totalRounds) {
-                endGame("🏆 指定題數已全部挑戰完畢！");
-            } else {
-                drawCards();
-            }
+            if (gameMode === 'rounds' && currentRound > totalRounds) endGame("🏆 戰役任務全數達成！");
+            else drawCards();
         }
 
         function evaluateAnswer() {
             let msgBox = document.getElementById('msg-box');
+            if (cardsUsedCount !== 4) { msgBox.innerHTML = "<span class='error'>❌ 必須部署全部 4 張戰術單卡！</span>"; return; }
             
-            if (cardsUsedCount !== 4) {
-                msgBox.innerHTML = "<span class='error'>❌ 必須使用全部 4 張牌！請繼續排列。</span>";
-                return;
-            }
-
             let eqItems = Array.from(document.getElementById('equation-zone').children);
-            let mathStr = eqItems.map(item => {
-                let v = item.dataset.val;
-                if(v === '×') return '*';
-                if(v === '÷') return '/';
-                return v;
-            }).join('');
-
+            let originalEquationString = eqItems.map(item => item.innerText).join(' ');
+            let mathStr = eqItems.map(item => item.dataset.val === '×' ? '*' : (item.dataset.val === '÷' ? '/' : item.dataset.val)).join('');
             try {
                 let result = eval(mathStr);
                 if (result === 24) {
-                    msgBox.innerHTML = "<span class='success'>🎉 恭喜答對！成功組成 24 點！</span>";
-                    scores[activePlayer]++;
-                    document.getElementById(`score${activePlayer}`).innerText = scores[activePlayer];
-                    
+                    msgBox.innerHTML = "<span class='success'>🎉 解密成功！完美達成 24 點！</span>";
+                    scores[activePlayer]++; document.getElementById(`score${activePlayer}`).innerText = scores[activePlayer];
                     let currentCards = Array.from(document.querySelectorAll('.card')).map(c => parseInt(c.dataset.val));
-                    let p1RoundWin = (activePlayer === 1) ? 1 : 0;
-                    let p2RoundWin = (activePlayer === 2) ? 1 : 0;
-                    
-                    saveGameStatsToServer(p1RoundWin, p2RoundWin, currentCards);
-
-                    setTimeout(() => {
-                        processNextRound(); 
-                    }, 1500);
-
+                    saveGameStatsToServer(activePlayer === 1 ? 1 : 0, activePlayer === 2 ? 1 : 0, currentCards, originalEquationString);
+                    setTimeout(processNextRound, 1500);
                 } else {
-                    msgBox.innerHTML = `<span class='error'>❌ 算出來是 ${result} 答錯了！${playMode === 'single' ? '請重新修正算式！':'重置並重新開放搶答。'}</span>`;
-                    if (playMode === 'battle') {
-                        setTimeout(() => {
-                            clearEquationZone();
-                            resetBuzzer();
-                        }, 2000);
-                    }
+                    msgBox.innerHTML = `<span class='error'>❌ 運算結果為 ${result} 部署失敗！${playMode==='single'?'重新修正算式':'重新開放搶答'}</span>`;
+                    if (playMode === 'battle') { setTimeout(() => { clearEquationZone(); resetBuzzer(); }, 2000); }
                 }
             } catch (e) {
-                msgBox.innerHTML = "<span class='error'>❌ 算式結構錯誤 (例如括號不完整)，請檢查！</span>";
-                if (playMode === 'battle') {
-                    setTimeout(() => {
-                        clearEquationZone();
-                        resetBuzzer();
-                    }, 2000);
-                }
+                msgBox.innerHTML = "<span class='error'>❌ 算式鏈結錯誤，請重新排列！</span>";
+                if (playMode === 'battle') { setTimeout(() => { clearEquationZone(); resetBuzzer(); }, 2000); }
             }
         }
 
         function skipRound() {
-            let msgBox = document.getElementById('msg-box');
-            msgBox.innerHTML = "<span class='error'>⏭️ 放棄本題，準備發放下一題牌組...</span>";
-            
             let currentCards = Array.from(document.querySelectorAll('.card')).map(c => parseInt(c.dataset.val));
-            saveGameStatsToServer(0, 0, currentCards);
-
-            setTimeout(() => {
-                processNextRound(); 
-                    }, 1500);
+            saveGameStatsToServer(0, 0, currentCards, '聯');
+            processNextRound();
         }
 
-        async function saveGameStatsToServer(p1, p2, cards) {
+        async function saveGameStatsToServer(p1, p2, cards, equation) {
             try {
-                const response = await fetch(`${BACKEND_URL}/api/stats`, {
+                await fetch(`${BACKEND_URL}/api/stats`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
-                        username: currentUser, 
-                        gameMode: playMode, 
-                        p1: p1, 
-                        p2: p2, 
-                        cards: cards 
-                    }) 
+                    body: JSON.stringify({ username: currentUser, gameMode: playMode, p1: p1, p2: p2, cards: cards, equation: equation })
                 });
-                const data = await response.json();
-                console.log("同步狀態:", data.message);
-            } catch (error) {
-                console.error("資料傳輸錯誤，未與雲端同步:", error);
-            }
+            } catch (error) { console.error(error); }
         }
 
         function endGame(reason) {
-            clearInterval(timerInterval); 
+            clearInterval(timerInterval);
             document.getElementById('game-screen').style.display = 'none';
             document.getElementById('end-screen').style.display = 'block';
-
             let resText = `${reason}<br><br>`;
-            if (playMode === 'single') {
-                resText += `👤 本局你一共成功解出：${scores[1]} 題！`;
-            } else {
-                resText += `玩家一得分: ${scores[1]}<br>玩家二得分: ${scores[2]}<br><br>`;
-                if (scores[1] > scores[2]) resText += "🏆 玩家一 獲勝！";
-                else if (scores[2] > scores[1]) resText += "🏆 玩家二 獲勝！";
-                else resText += "🤝 雙方旗鼓相當，平手！";
+            if (playMode === 'single') resText += `👤 本局你一共成功通關：${scores[1]} 關！`;
+            else {
+                resText += `藍方勝局: ${scores[1]} | 紫方勝局: ${scores[2]}<br><br>`;
+                resText += scores[1] > scores[2] ? "🏆 藍方部隊 贏得這場戰役！" : (scores[2] > scores[1] ? "🏆 紫方部隊 贏得這場戰役！" : "🤝 旗鼓相當，平手結算！");
             }
-
             document.getElementById('final-result').innerHTML = resText;
         }
 
         function returnToLobby() {
-            clearInterval(timerInterval); 
+            clearInterval(timerInterval); toggleSidebar(false);
             document.getElementById('game-screen').style.display = 'none';
             document.getElementById('end-screen').style.display = 'none';
             document.getElementById('setup-screen').style.display = 'block';
         }
 
         function handleLogout() {
-            currentUser = ''; 
-            document.getElementById('auth-username').value = ''; 
-            document.getElementById('auth-password').value = '';
-            document.getElementById('auth-msg').innerText = ''; 
-            
+            currentUser = ''; toggleSidebar(false);
+            document.getElementById('auth-username').value = ''; document.getElementById('auth-password').value = '';
+            switchAuthMode('login');
             document.getElementById('setup-screen').style.display = 'none';
             document.getElementById('auth-screen').style.display = 'block';
         }
