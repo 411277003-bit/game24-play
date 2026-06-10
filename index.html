@@ -25,6 +25,7 @@
         
         #auth-screen, #setup-screen, #game-screen, #end-screen { display: none; }
         
+        /* 統一黃金寬度，達成絕對中軸垂直對齊 */
         .panel, #header-info, #score-board, #buzzer-status, .workspace, #equation-zone {
             width: 100% !important;
             max-width: 400px !important; 
@@ -49,6 +50,7 @@
         }
         .setup-row input:focus { border-color: #dc3545; outline: none; }
 
+        /* 大廳撲克牌按鈕 */
         .game-card-container { display: flex; gap: 12px; width: 100%; }
         .game-card {
             flex: 1; background: #ffffff; border: 2px solid #cbd5e1; border-radius: 10px;
@@ -104,6 +106,7 @@
         }
         .tab-btn.active { background: #1e293b; color: white; border-color: #1e293b; }
 
+        /* 資訊提示區：內容靠左對齊，面框寬度中軸對齊 */
         #header-info, #score-board, #buzzer-status {
             display: flex; 
             justify-content: flex-start; 
@@ -141,6 +144,7 @@
         }
         .draggable-item:hover { transform: translateY(-3px); border-color: #dc3545; }
         
+        /* 撲克牌形狀：原汁原味純正直立經典款 */
         .card { 
             width: 78px; height: 112px; flex-direction: column; justify-content: space-between; padding: 5px 0; background: #ffffff; 
             animation: dealCard 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.15) backwards;
@@ -192,7 +196,7 @@
 <body>
 
     <div id="auth-screen" class="panel" style="display: block;">
-        <h2 id="auth-title">🔐 24點 會員登入</h2>
+        <h2>🔐 24點 會員登入</h2>
         <div id="auth-msg" class="error" style="margin-bottom: 10px;"></div>
         <div class="setup-row">
             <label class="title">用戶帳號：</label>
@@ -297,7 +301,7 @@
         </div>
 
         <div class="controls">
-            <button id="skip-btn" onclick="skipRound()" style="background-color: #475569; box-shadow: none;">⏭️ 放棄跳過</button>
+            <button id="skip-btn" onclick="skipRound()" style="background-color: #475569; box-shadow: none;">⏭️ 放棄本題 (跳過)</button>
             <button class="btn-home" onclick="returnToLobby()">🏠 返回大廳</button>
         </div>
     </div>
@@ -745,7 +749,7 @@
                     saveGameStatsToServer(activePlayer === 1 ? 1 : 0, activePlayer === 2 ? 1 : 0, currentCards, originalEquationString);
                     setTimeout(processNextRound, 1500);
                 } else {
-                    // 🌟 修正：算錯時，單人與雙人模式皆會自動重置卡牌歸位
+                    // 🌟 核心升級：算錯時，單人與雙人模式皆會自動 1.5 秒重置卡牌歸位
                     msgBox.innerHTML = `<span class='error'>❌ 運算結果為 ${result} 部署失敗！卡牌重置中...</span>`;
                     setTimeout(() => { 
                         clearEquationZone(); 
@@ -754,7 +758,7 @@
                     }, 1500);
                 }
             } catch (e) {
-                // 🌟 修正：格式錯誤時，單人與雙人模式皆會自動重置卡牌歸位
+                // 🌟 核心升級：結構出錯時，單人與雙人模式皆會自動 1.5 秒重置卡牌歸位
                 msgBox.innerHTML = "<span class='error'>❌ 算式結構錯誤，請重新排列！卡牌重置中...</span>";
                 setTimeout(() => { 
                     clearEquationZone(); 
@@ -766,7 +770,7 @@
 
         function skipRound() {
             let currentCards = Array.from(document.querySelectorAll('.card')).map(c => parseInt(c.dataset.val));
-            saveGameStatsToServer(0, 0, currentCards, '無');
+            saveGameStatsToServer(0, 0, currentCards, '無'); // 修正之前的打字拼寫
             processNextRound();
         }
 
